@@ -1,0 +1,79 @@
+# VistaRevive: build the installable ISO on GitHub's servers.
+# Start it from the repository's "Actions" tab -> "Build VistaRevive ISO" -> "Run workflow".
+# The ISO appears as a download on the finished run (and as a Release if chosen).
+name: Build VistaRevive ISO
+
+on:
+  push:            # every push to main builds a fresh ISO (LibreOffice edition)
+    branches: [main]
+    paths-ignore: ["**.md", "vistarevive-preview.png"]
+  workflow_dispatch:
+    inputs:
+      office:
+        description: "Office suite in the image"
+        type: choice
+        options: [libreoffice, lite, both]
+        default: libreoffice
+      release:
+        description: "Also publish the ISO as a GitHub Release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # only needed for the optional Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space (the build needs ~12 GB)
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                      /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          df -h /
+
+      - name: Build inside Debian 13 (trixie)
+        run: |
+          docker run --rm --privileged \
+            -v "$PWD":/work -w /work \
+            debian:trixie bash -c "
+              set -e
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y live-build
+              bash 09-build-iso.sh --office '${{ inputs.office || 'libreoffice' }}' --dir /work/iso-build
+            "
+
+      - name: Show result
+        run: ls -lh iso-build/*.iso iso-build/*.sha256
+
+      - name: Upload ISO as a download
+        uses: actions/upload-artifact@v4
+        with:
+          name: vistarevive-iso
+          path: |
+            iso-build/vistarevive-*.iso
+            iso-build/vistarevive-*.iso.sha256
+          compression-level: 0
+          retention-days: 30
+
+      - name: Upload build log (for troubleshooting)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: iso-build/build.log
+          if-no-files-found: ignore
+
+      - name: Publish Release (optional)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          iso=$(ls iso-build/vistarevive-*.iso)
+          tag="v$(date +%Y%m%d-%H%M)"
+          gh release create "$tag" "$iso" "$iso.sha256" \
+            --title "VistaRevive $(date +%Y-%m-%d)" \
+            --notes "Office: ${{ inputs.office || 'libreoffice' }}. Write to USB, boot with F9, choose Live or Install."

@@ -1,0 +1,4 @@
+iso-build/
+art-out/
+*.iso
+*.iso.sha256
