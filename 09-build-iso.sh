@@ -95,6 +95,12 @@ intel-microcode
 libgl1-mesa-dri
 mesa-utils
 xserver-xorg-video-radeon
+# Live session: with --apt-recommends false these are NOT pulled in automatically.
+# user-setup creates the live user ('user' / 'live'); without it nobody can log in.
+live-boot
+live-config
+live-config-systemd
+user-setup
 # Basics the phase scripts expect
 network-manager
 alsa-utils
