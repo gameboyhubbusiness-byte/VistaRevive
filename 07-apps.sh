@@ -52,13 +52,20 @@ fi
 # ---------------------------------------------------------------------------
 # 1. Packages
 # ---------------------------------------------------------------------------
-LANG_CODE="$(. /etc/default/locale 2>/dev/null; echo "${LANG:-en_US}" | cut -d_ -f1)"
+# Spell-check dictionary for the system language. Debian names them by region
+# (hunspell-en-us, hunspell-de-de) or by language (hunspell-hr), so try both.
+LOC="$(. /etc/default/locale 2>/dev/null; echo "${LANG:-en_US.UTF-8}")"
+LOC="${LOC%%.*}"; LANG_CODE="${LOC%%_*}"
+HUNSPELL=hunspell-en-us
+for p in "hunspell-$(echo "$LOC" | tr '_A-Z' '-a-z')" "hunspell-$LANG_CODE"; do
+  if apt-cache show "$p" >/dev/null 2>&1; then HUNSPELL=$p; break; fi
+done
 mapfile -t PKGS < <(available \
   firefox-esr webext-ublock-origin-firefox \
   libreoffice-writer libreoffice-calc libreoffice-gtk3 \
   abiword gnumeric \
   fonts-liberation2 fonts-crosextra-carlito fonts-crosextra-caladea \
-  "hunspell-$LANG_CODE" \
+  "$HUNSPELL" \
   atril mpv yt-dlp xclip xdotool \
   ristretto xarchiver 7zip unzip zip \
   mousepad galculator synaptic exo-utils xdg-utils \

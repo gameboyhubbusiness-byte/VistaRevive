@@ -129,7 +129,7 @@ if systemctl list-unit-files ModemManager.service >/dev/null 2>&1; then
 fi
 
 # GRUB menu: 1 second instead of 5.
-if grep -q '^GRUB_TIMEOUT=' /etc/default/grub; then
+if grep -q '^GRUB_TIMEOUT=' /etc/default/grub 2>/dev/null; then
   sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=1/' /etc/default/grub
   update-grub >/dev/null 2>&1
 fi

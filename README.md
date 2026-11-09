@@ -63,7 +63,7 @@ Icons: Oxygen (LGPL, from Debian). Cursor: DMZ-White (from Debian).
 - [~] Phase 6 – Login screen, boot splash, gadgets (ready, untested)
 - [~] Phase 7 – Apps + low-RAM tuning + benchmarks (ready, untested; office pick waits for benchmark)
 - [~] Phase 8 – Welcome Center (ready; logic tested, GUI untested)
-- [~] Phase 9 – Reproducible ISO build (config generation tested; full build untested)
+- [x] Phase 9 – Reproducible ISO build (builds on GitHub Actions: Actions tab → latest run → Artifacts)
 - [ ] Phase 10 – Testing and polish
 
 ## Hardware (fill in from hw-report.txt)

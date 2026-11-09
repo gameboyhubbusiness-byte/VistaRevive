@@ -65,7 +65,7 @@ EOF
 plymouth-set-default-theme -R vistarevive
 
 # "quiet splash" on the kernel command line, fewer messages on screen
-if grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub; then
+if grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub 2>/dev/null; then
   cmd=$(sed -n 's/^GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/\1/p' /etc/default/grub)
   for opt in quiet splash loglevel=3 vt.global_cursor_default=0; do
     [[ " $cmd " == *" $opt "* ]] || cmd="$cmd $opt"
